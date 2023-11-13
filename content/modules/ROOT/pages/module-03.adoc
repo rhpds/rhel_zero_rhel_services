@@ -1,138 +1,110 @@
-= Managing an Application from GitHub
+Navigate to the Image Builder application:
 
-In the first half of this workshop, we packaged an application into this portable container format manually using rpms.
-In the second half, we will consider that you may want to manage software from GitHub or some kind of software versioning application.
-Rather than installing rpms, we have individual software files and pull them out of that version control into a group of systems.
+[arabic]
+. Type `+Image Builder+` in the search bar.
+. In the `+Deploy+` card, click `+Image Builder+`.
 
-== Install RHEL 8 UBI
+.search bar
+image::imagebuildersearchbar.png[search bar]
 
-In this lab, we will be using a different Red Hat Enterprise Linux version in my container. 
+Click on the `+Create image+` button.
 
-. Verify the host system release 
+.create image
+image::createimagebutton.png[create image]
 
-+
-[source,bash]
-----
-cat /etc/redhat-release
-----
-+ 
-NOTE: The `bastion` system is Red Hat Enterprise Linux 9, and when you built the previous container, you used the UBI9 image. This means both the image and the container were built off the same Red Hat Enterprise Linux packages. 
+We’ll configure the `+Image output+`.
 
-. As we did previously in this lab, Use `buildah from` to pull down the Red Hat Enterprise Linux 8 UBI.
+[arabic]
+. Select `+Red Hat Enterprise Linux (RHEL) 9+`.
+. Select `+Amazon Web Services+`.
+. Click `+Next+`.
 
-+
-[source,bash]
-----
-buildah from registry.access.redhat.com/ubi8/ubi
-----
+.image output
+image::imageoutput.png[image output]
 
-NOTE: Because you already pulled one image named `ubi-working-container` this one is called `ubi-working-container-1`. 
+Configure the `+Target environment+`.
 
-[#prerequisites]
-== Install Prerequisites
+[arabic]
+. Select `+Use an account configured from Sources+`. This selects an AWS
+account that was preconfigured for this lab.
+. Select the source labelled `+RHTE1+`.
+. Observe that the `+Default Region+` and `+Associated Account ID+` are
+prefilled.
+. Click on `+Next+`.
 
-Now that you have a working container, you will use the same process as before installing all the prerequisites, changing config files, and manipulating the contents of this container to be in the desired state.
+.target env
+image::targetenvironment.png[target env]
 
-The software you will install is a JavaScript-based game that runs on a web browser. As before in the lab, use dnf to install software inside the container. 
+Configure system registration in `+Register+`.
 
-. Use `buildah run` and install Apache (`httpd`) into the `ubi-working-container-1` container. 
-+
-[source,bash]
-----
-buildah run ubi-working-container-1 -- dnf -y install httpd
-----
+[arabic]
+. Select `+Automatically register and enable advanced capabilities+`.
+. Select the activation key `+rhte+`.
+. Click `+Next+`.
 
-== Enable Service
+.register
+image::registersystems.png[register]
 
-The next thing to do is to use a systemctl to enable the service. The ubi-init provides full systemd service to the container.
-This will start up any of the services that are enabled. 
+Accept the default `+Automatic partitioning+` in
+`+File system configuration+` and click `+Next+`.
 
-. Enable the `httpd` service using `buildah run`
+.default partitioning
+image::partitioningdefault.png[default partitioning]
 
-+
-[source,bash]
-----
-buildah run ubi-working-container-1 -- systemctl enable httpd
-----
+Next we’ll add software to the image.
 
-NOTE: The UBI standard image doesn't have systemd installed on it by default. The `ubi-init` container image does include systemd. Plan accordingly to which image you use to build applications.  
+[arabic]
+. In `+Available packages+` search for, and add the following software:
+* `+podman+`
+* `+rhc-worker-playbook+`
+. You may also add any other software you wish.
+. Click `+Next+`.
 
-== Explore Source Materials
+.add packages
+image::addpackages.png[add packages]
 
-A GitHub repository has already been synchronized to `/home/devops/clumsy-bird/` This repository contains the configurations for your application.
+We’ll add some packages from custom repositories.
 
-. Verify the repository is cloned inside the `/home/devops/` directory
-+
-[source,bash]
-----
-cd /home/devops/
-----
+[arabic]
+. Check off the following `+Custom repositories+`. The `+CustomRepo+`
+repository contains the custom made `+ubi-init+` RPM which will install
+a Universal Base Image (ubi) container into your image.
+* `+CustomRepo+`
+* `+EPEL 8 Everything x86_64+` or `+EPEL 9 Everything x86_64+` if you
+are building a RHEL 9 image.
+. Then click `+Next+`.
 
-+
-[source,bash]
-----
-git clone https://github.com/ellisonleao/clumsy-bird
-----
-+
-NOTE: The output states that the software has already been checked out. 
-+
-. Explore the JavaScript contents, index files, and everything else that we need for this web-based JavaScript software.
-+
-[source,bash,role=execute]
-----
-ls clumsy-bird
-----
+.choose repos
+image::customreposchecked.png[choose repos]
 
-== Add Source Materials to Container
+Add packages from the custom repositories.
 
-. Now that you have verified the source materials exist, you will put the software inside of my container image using the `buildah copy` command.
-+
-[source,bash]
-----
-buildah copy ubi-working-container-1 clumsy-bird /var/www/html
-----
+[arabic]
+. Add the following packages.
+* `+libyubikey+` - This package sits in the EPEL repository.
+* `+openvpn+` - This package also resides in the EPEL repository.
+* `+ubi-init+` - This is a custom package residing in the `+CustomRepo+`
+repository and contains a ubi container image.
+. Click `+Next+`.
 
-[#container]
-== Enable Container in Background
+.add custom software
+image::selectcustompackages.png[add custom software]
 
-In the previous section of this lab, you ran the game natively through interactive mode. Because you are now building a web application you will need to run the container in the background and access it through a web address. 
+Give your image a name (something easily idenitfiable by you) and click
+`+Next+`.
 
-. Execute `buildah config` to specify a port and initialize the container. 
+.name image
+image::nameimage.png[name image]
 
-+
-[source,bash]
-----
-buildah config --port 80 --cmd "/usr/sbin/init" ubi-working-container-1
-----
+Review the configuration and then click `+Create image+`.
 
-NOTE: The command makes a configuration change to this container. I'm configuring this container to accept connections to its port 80. When the container starts up, it should run the init command, which, in this case, is going to be the Apache daemon right from earlier when I enabled it.
+.create image
+image::createimage.png[create image]
 
-== Commit Container and Deploy
+The image build process will take about 15-20 minutes.
 
-. Now that we have a container in a working configured state, it is time to make that permanent by committing it to a container image called `clumsy-bird`
-+
-[source,bash]
-----
-buildah commit ubi-working-container-1 clumsy-bird
-----
+.image building
+image::creatingimage.png[image building]
 
-. Verify that the image was created with `podman`
-+
-[source,bash]
-----
-podman images
-----
-+
-. Run the container Now it's time to run the container. 
-+
-[source,bash]
-----
-podman run -d -p 8500:80 clumsy-bird
-----
-
-== Verify Application
-
-Verify that the application is running by navigating to
-
-http://bastion.{guid}.example.opentlc.com:8500
-
+Proceed to the next step of this lab where you may continue with
+pre-built images.

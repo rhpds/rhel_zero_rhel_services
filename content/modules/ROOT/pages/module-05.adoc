@@ -1,0 +1,93 @@
+To demonstrate patching, we’ll downgrade `+openssh+` and `+bash+` before
+utilizing the patching application. In the `+Terminal+`, run the
+following command.
+
+[source,bash]
+----
+dnf -y downgrade bash openssh
+----
+
+Next we’ll run `+insights-client+` to update the host’s metadata status
+the Red Hat Hybrid Cloud Console.
+
+[source,bash]
+----
+insights-client
+----
+
+image:../assets/downgradeopensshbash.png[downgrade openssh bash]
+
+Navigate to the `+Systems+` menu in the `+Patch+` application.
+
+.systems patch
+image::patchsystems.png[systems patch]
+
+Locate your host in the list, based on its private IP address /
+hostname. It should have two installable advisories (which are the
+packages we just downgraded).
+
+[arabic]
+. Select your host.
+. Click `+Remediate+`.
+
+.remediate new
+image::remediatenew.png[remediate new]
+
+You’ll be asked to `+Select playbook+` next. This feature is designed to
+enable you to create customized playbooks that include remediations
+detected from other Insights applications, like `+Compliance+` for
+example.
+
+In other words, you may want to upgrade `+bash+` but then you might also
+want to remediate other problems detected by OpenSCAP (through the
+`+Compliance+` application).
+
+Create a new playbook.
+
+[arabic]
+. Select `+Create a new playbook+` and give it a name. In this example
+we’ll call it `+test-001+` (please choose a unique name).
+. Click `+Next+`.
+
+Review the correct system is selected and click `+Next+`.
+
+.review systems
+image::reviewsystems.png[review systems]
+
+Review the remediation and click `+Submit+`. Note that `+Autoreboot+` is
+enabled. This can be turned off if desired.
+
+.submit
+image::submitremediation.png[submit]
+
+Here’s the result. *Do not close this window.*
+
+.submitted
+image::submitted.png[submitted]
+
+Click on `+Open playbook test-001+`.
+
+.open playbook
+image::openplaybook.png[open playbook]
+
+Click on `+Execute playbook+`
+
+.execute playbook
+image::executeplaybook.png[execute playbook]
+
+Click on `+Execute playbook on 1 system+`.
+
+.execute on 1 system
+image::executetheplaybookforreal.png[execute on 1 system]
+
+You can view the execution of the remediation playbook in real-time by
+clicking on `+View+`.
+
+.view
+image::viewexecution.png[view]
+
+You can go back to the remediations menu which will show the host issues
+as resolved.
+
+.resolved
+image::resolved.png[resolved]
